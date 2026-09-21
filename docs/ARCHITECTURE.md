@@ -2,169 +2,133 @@
 
 ## 1. System Boundary
 
-Apple Watch 僅負責四件事：
-
-1. Capture voice
-2. Speech-to-text
-3. Send request
-4. Present / speak response
-
-其他能力全部放在後端 Gateway。
-
-## 2. Components
-
-### WatchApp
-
-#### ContentView
-依 AppState 決定畫面。
-
-#### AudioRecorder
-處理 microphone permission、start、stop。
-
-#### SpeechRecognizer
-將語音轉成文字。
-
-#### AgentClient
-負責 HTTPS request、timeout、JSON decode。
-
-#### SpeechOutput
-把 reply 朗讀出來。
-
-### Server
-
-#### main.py
-FastAPI HTTP entry point。Apple Watch 只與此服務溝通。
-
-#### codex_client.py
-啟動官方 `codex app-server` child process，使用預設 stdio JSONL transport，並實作：
-
-- initialize / initialized
-- account/read
-- account/login/start（ChatGPT device code）
-- account/rateLimits/read
-- model/list
-- thread/start
-- turn/start
-- item/agentMessage/delta
-- turn/completed
-
-### v0.1 LLM Provider
+AIWristCom v0.1 是 **Apple Watch + paired iPhone companion** 架構。
 
 ```text
-FastAPI
-  ↓
+Apple Watch
+  ↓ WatchConnectivity
+iPhone Companion
+  ↓ replaceable LLM provider
+LLM
+```
+
+Watch 不直接連 Internet LLM endpoint，也不保存遠端 provider credentials。
+
+## 2. Watch responsibilities
+
+- Double Tap primary action
+- microphone / Traditional Chinese STT
+- UI state machine
+- WatchConnectivity request/reply
+- haptic feedback
+- TTS
+
+Watch 使用 `WCSession.sendMessage` 對配對 iPhone 發立即訊息。
+
+## 3. iPhone responsibilities
+
+- activate `WCSession`
+- receive Watch requests
+- run in background long enough to handle the live request
+- own provider settings
+- route requests through `CompanionLLMRouter`
+- return AI reply through WatchConnectivity reply handler
+- future Calendar / Home / FamilyRecorder agent actions
+
+## 4. LLM provider boundary
+
+The iPhone owns the provider interface.
+
+Current v0.1:
+
+```text
+iPhone
+  ↓ HTTPS
+Codex Gateway Host
+  ↓ stdio
 codex app-server
-  ↓
-ChatGPT managed OAuth
-  ↓
-ChatGPT/Codex subscription entitlement
+  ↓ ChatGPT managed OAuth
+OpenAI model
 ```
 
-v0.1 不使用 OpenAI API key，也不直接呼叫 OpenAI Responses API。
+The Codex host is **not** the Watch hub.
 
-模型名稱不 hard-code；啟動 query 時使用 `model/list` 取得目前帳號可用模型並優先選 `isDefault=true`。
+It is only one provider implementation because current ChatGPT-subscription OAuth is documented around Codex clients/App Server.
 
-## 3. API Versioning
+Future provider implementations can replace it without changing Watch code.
 
-API 一開始就使用：
+## 5. WatchConnectivity transport
 
-```
-/api/v1/query
-```
+Interactive voice request:
 
-未來 breaking change 才能開 /api/v2。
-
-## 4. Timeouts
-
-建議：
-
-- Watch HTTP timeout: 30 s
-- Gateway provider timeout: 25 s
-- STT max utterance for MVP: 30 s
-
-## 5. Logging
-
-Server 每次 request 至少記：
-
-```
-timestamp
-request_id
-device
-intent
-provider
-latency_ms
-success
-error_code
+```swift
+sendMessage(_:replyHandler:errorHandler:)
 ```
 
-不要記 API key。
+Background queued/non-interactive work can later use `transferUserInfo`.
 
-若要記完整 user query，請做成可關閉設定。
+## 6. API boundary
 
-## 6. Future Streaming
+The existing FastAPI Gateway remains useful only behind the iPhone:
 
-MVP 不做 streaming。
-
-之後可考慮：
-
-```
+```text
 Watch
-  ↕ WebSocket
-Gateway
-  ↕ streaming provider API
+  X  no direct HTTP
+  ↓
+iPhone
+  ↓ HTTPS
+FastAPI Gateway
 ```
-
-但 watchOS 背景生命週期與網路中斷處理會複雜很多，所以不放在 v0.1。
-
 
 ## 7. Authentication boundary
 
-OAuth token 僅由 Codex 管理。
+Watch:
 
 ```text
-Apple Watch ──X── ChatGPT OAuth token
-FastAPI     ──X── raw token parsing
-
-codex app-server
-  └─ owns OAuth login
-  └─ persists credentials
-  └─ refreshes credentials
+No OAuth token
+No API key
+No Gateway URL
 ```
 
-第一次登入可用：
-
-```
-codex login
-```
-
-或 Gateway 的 device-code flow：
-
-```
-POST /api/v1/auth/device/start
-```
-
-## 8. Transport decision
-
-v0.1：
+iPhone:
 
 ```text
-FastAPI parent process
-  └─ codex app-server
-      └─ stdio JSONL
+Provider URL
+Device credential
+Provider selection
 ```
 
-不使用 remote WebSocket transport。
+Codex host:
 
-Watch 只存取 FastAPI HTTPS endpoint。
-
-## 9. Subscription limits
-
-ChatGPT OAuth 不代表無限制使用。
-
-Gateway 暴露：
-
-```
-GET /api/v1/limits
+```text
+ChatGPT OAuth session
+Codex App Server
 ```
 
-讀取 ChatGPT/Codex rate-limit window，日後可在 Watch 顯示使用狀態。
+## 8. Timeout budget
+
+Recommended:
+
+- Watch → iPhone message request: interactive
+- iPhone provider timeout: 30 s
+- Watch STT utterance: 30 s max for MVP
+
+## 9. Failure modes
+
+### Watch cannot reach iPhone
+
+Return a local Watch error immediately.
+
+### iPhone cannot reach provider
+
+iPhone returns an error through the same WatchConnectivity reply handler.
+
+### Provider auth expired
+
+Provider returns auth-required; iPhone UI owns remediation.
+
+## 10. Reference docs
+
+- `docs/IPHONE_COMPANION_ARCHITECTURE.md`
+- `docs/DOUBLE_TAP_DESIGN.md`
+- `docs/CHATGPT_OAUTH_BACKEND.md`
