@@ -39,7 +39,6 @@ final class RemoteCodexProvider: LLMProvider {
         self.session = session
     }
 
-    @MainActor
     private func configuration() throws -> (URL, String) {
         guard
             let baseURL = URL(string: settings.gatewayURL),
@@ -52,7 +51,7 @@ final class RemoteCodexProvider: LLMProvider {
     }
 
     func query(text: String, locale: String) async throws -> String {
-        let (endpoint, token) = try await configuration()
+        let (endpoint, token) = try configuration()
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
