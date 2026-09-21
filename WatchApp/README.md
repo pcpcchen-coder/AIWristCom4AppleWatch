@@ -8,7 +8,7 @@
 - idle → listening
 - listening → stop/send
 - Traditional Chinese Speech-to-Text
-- FastAPI Gateway client
+- WatchConnectivity iPhone bridge
 - AI response display
 - Traditional Chinese TTS
 - haptic feedback
@@ -44,27 +44,24 @@ Privacy - Speech Recognition Usage Description
 AIWristCom 需要將你的語音轉換成文字後送給 AI。
 ```
 
-## Gateway key
+## iPhone Companion
 
-加入：
+Watch **不設定 Gateway URL 或 OAuth/API credential**。
 
-```text
-AIWRIST_GATEWAY_URL
-```
-
-例如：
+所有 AI request 都走：
 
 ```text
-https://YOUR-GATEWAY/
+Watch → WCSession → paired iPhone
 ```
 
-開發時若後端設了 `AIWRIST_DEVICE_TOKEN`，Watch 端也可暫時設定：
+請用同一個 Xcode project 建立 iOS companion target，並加入 `iPhoneApp/*`。
+
+詳細說明：
 
 ```
-AIWRIST_DEVICE_TOKEN
+iPhoneApp/README.md
+docs/IPHONE_COMPANION_ARCHITECTURE.md
 ```
-
-正式版再改 Keychain/device registration。
 
 ## Double Tap
 
