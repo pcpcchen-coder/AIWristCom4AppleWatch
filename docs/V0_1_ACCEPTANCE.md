@@ -17,7 +17,7 @@ Watch 不得直接 HTTP 連 Gateway。第一階段先驗收固定文字往返，
 - Watch 30 秒、iPhone 27 秒、HTTP 25 秒、後端完整 query 20 秒的期限；背景到期取消並只回覆一次。
 - Request UUID / 空白 / 字數 / locale 檢查；Watch 核對 success 與 error 的 request_id。
 - iPhone 換錶重新 activate；已儲存 device token 使用 Keychain；不保存 OAuth token。
-- Swift core unit tests、Python fake-backed HTTP smoke/unit tests、架構檢查、GitHub Actions。
+- Swift core unit tests、Python fake-backed HTTP smoke/unit tests、架構檢查、GitHub Actions 範本（尚未啟用）。
 
 ## 建置
 

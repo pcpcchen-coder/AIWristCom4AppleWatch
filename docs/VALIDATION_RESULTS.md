@@ -28,4 +28,4 @@
 正常已完成首次設定的 Xcode 環境應先使用 `swift test` 或 Xcode Test action。
 Python 測試有 2 個上游 Starlette/httpx deprecation warnings，不影響 12 項結果。
 
-遠端 CI 結果另依 PR checks 為準，不能將已加入 workflow 視為 CI 已通過。
+GitHub 憑證缺少 workflow scope，新增 workflow 的推送遭拒；改保留 `scripts/ci.yml.example` 範本。未執行遠端 CI，不能宣稱 CI 已通過。要啟用時由有權限者將範本放至 `.github/workflows/ci.yml`。
