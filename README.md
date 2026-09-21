@@ -598,3 +598,11 @@ Watch 與 Agent backend 才能獨立演進。
 > 抬手、按一下、說一句話，AI Agent 幫你理解、處理、執行，再從手腕告訴你結果。
 
 這才是 AIWristCom4AppleWatch 的核心。
+
+
+## v0.1 實作指南
+
+- Watch Double Tap： [docs/DOUBLE_TAP_DESIGN.md](docs/DOUBLE_TAP_DESIGN.md)
+- ChatGPT OAuth backend： [docs/CHATGPT_OAUTH_BACKEND.md](docs/CHATGPT_OAUTH_BACKEND.md)
+- macOS 後端自動常駐： [docs/MACOS_ALWAYS_ON_GATEWAY.md](docs/MACOS_ALWAYS_ON_GATEWAY.md)
+- Watch Xcode setup： [WatchApp/README.md](WatchApp/README.md)
