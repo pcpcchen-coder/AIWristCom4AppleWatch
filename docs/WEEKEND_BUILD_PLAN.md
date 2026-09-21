@@ -57,11 +57,20 @@ Watch 呼叫 Server。
 - Watch 顯示 reply
 
 ### Step 7
-接第一個 LLM。
+接 ChatGPT OAuth backend。
+
+1. 安裝 Codex CLI。
+2. 先執行 `codex login`，選「使用 ChatGPT 登入」；或使用本專案 device-code endpoint。
+3. FastAPI 啟動 `codex app-server` child process。
+4. 以 `account/read` 確認 auth。
+5. 以 `model/list → thread/start → turn/start` 取得回答。
 
 驗收：
+- `GET /api/v1/auth/status` → authenticated=true
+- 系統環境沒有 `OPENAI_API_KEY` 也能工作
 - 使用者說「幫我用一句話介紹鋰電池 BMS」
 - AI reply 正常回到 Watch
+- `GET /api/v1/limits` 能讀到 rate-limit 狀態
 
 ### Step 8
 加 TTS。
@@ -94,7 +103,7 @@ Watch 呼叫 Server。
 - Complication
 - 多 Agent
 - streaming
-- login system
+- 自製帳密/login system（OAuth 直接交給 Codex）
 - fancy animation
 
 那些全部等 v0.1 Pass 後再加。
