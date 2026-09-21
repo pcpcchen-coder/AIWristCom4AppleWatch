@@ -16,6 +16,7 @@ pcpcchen-coder/AIWristCom4AppleWatch
 README.md
 docs/ARCHITECTURE.md
 docs/CHATGPT_OAUTH_BACKEND.md
+docs/DOUBLE_TAP_DESIGN.md
 docs/WEEKEND_BUILD_PLAN.md
 ```
 
@@ -114,6 +115,28 @@ error
 ```
 
 狀態切換集中管理，不要散落在各個 View。
+
+## Double Tap interaction — 不得改壞
+
+watchOS deployment target 為 11+。
+
+語音主畫面必須只有一個 primary action，並以：
+
+```swift
+.handGestureShortcut(.primaryAction, isEnabled: ...)
+```
+
+綁定到與實體 Button 相同的 `controller.handlePrimaryAction()`。
+
+狀態規則：
+
+```text
+idle       + Double Tap → start listening
+listening  + Double Tap → stop + send
+transcribing/sending/speaking/error → primary action disabled
+```
+
+不要自行使用 accelerometer / Core Motion 模擬 Double Tap，也不要聲稱可以在 Watch Face 全域攔截 Double Tap 喚醒 App。
 
 ## API
 
