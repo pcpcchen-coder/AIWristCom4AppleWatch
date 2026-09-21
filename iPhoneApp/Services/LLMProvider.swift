@@ -28,30 +28,32 @@ enum CompanionLLMError: LocalizedError {
 /// iPhone is the Watch-facing hub. The Codex host is behind the iPhone and is
 /// replaceable. It can be a Mac during development or another always-on host.
 final class RemoteCodexProvider: LLMProvider {
-    private let settings: CompanionSettings
     private let session: URLSession
 
-    init(
-        settings: CompanionSettings = .shared,
-        session: URLSession = .shared
-    ) {
-        self.settings = settings
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
-    private func configuration() throws -> (URL, String) {
-        guard
-            let baseURL = URL(string: settings.gatewayURL),
-            let endpoint = URL(string: "api/v1/query", relativeTo: baseURL)?.absoluteURL
-        else {
-            throw CompanionLLMError.invalidGatewayURL
-        }
+    private func configuration() async throws -> (URL, String) {
+        try await MainActor.run {
+            let settings = CompanionSettings.shared
 
-        return (endpoint, settings.deviceToken)
+            guard
+                let baseURL = URL(string: settings.gatewayURL),
+                let endpoint = URL(
+                    string: "api/v1/query",
+                    relativeTo: baseURL
+                )?.absoluteURL
+            else {
+                throw CompanionLLMError.invalidGatewayURL
+            }
+
+            return (endpoint, settings.deviceToken)
+        }
     }
 
     func query(text: String, locale: String) async throws -> String {
-        let (endpoint, token) = try configuration()
+        let (endpoint, token) = try await configuration()
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -92,7 +94,7 @@ final class RemoteCodexProvider: LLMProvider {
     }
 }
 
-actor CompanionLLMRouter {
+final class CompanionLLMRouter {
     static let shared = CompanionLLMRouter()
 
     private let provider: LLMProvider
