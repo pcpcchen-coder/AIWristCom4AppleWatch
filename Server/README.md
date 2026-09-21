@@ -150,3 +150,23 @@ curl http://127.0.0.1:8000/api/v1/limits
 - [ ] 不需要 `OPENAI_API_KEY`
 - [ ] API billing 未被使用
 - [ ] rate-limit 用盡時後端可回明確錯誤，而不是 crash
+
+
+## 建議：讓 Gateway 自動常駐
+
+Double Tap 不應該依賴你每次先開 Terminal。
+
+完成 venv 與 `codex login` 後：
+
+```bash
+chmod +x install_launchd.sh uninstall_launchd.sh
+./install_launchd.sh
+```
+
+之後 macOS 登入時會自動啟動 Gateway，process 異常退出也會由 launchd 重新拉起。
+
+詳細說明：
+
+```
+docs/MACOS_ALWAYS_ON_GATEWAY.md
+```
