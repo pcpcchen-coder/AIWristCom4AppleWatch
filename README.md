@@ -1,3 +1,5 @@
+> **2026-09-21 工程狀態更新：** Xcode companion 專案與 mock 往返驗收入口已加入；本地繁中 STT、實機十次往返與完整語音驗收尚未完成。使用者選擇保留兩次 Double Tap，不改系統聽寫。實際進度及操作以 [v0.1 驗收指南](docs/V0_1_ACCEPTANCE.md) 為準。
+
 # AIWristCom4AppleWatch
 
 把 Apple Watch 變成個人 AI Agent 的「手腕語音終端」。

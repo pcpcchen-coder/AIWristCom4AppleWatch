@@ -1,4 +1,5 @@
 import os
+import secrets
 import uuid
 from contextlib import asynccontextmanager
 
@@ -14,8 +15,10 @@ codex = CodexAppServerClient()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await codex.start()
-    yield
-    await codex.close()
+    try:
+        yield
+    finally:
+        await codex.close()
 
 
 app = FastAPI(
@@ -32,7 +35,7 @@ async def verify_device_token(
     if not expected:
         return
 
-    if authorization != f"Bearer {expected}":
+    if not secrets.compare_digest(authorization or "", f"Bearer {expected}"):
         raise HTTPException(status_code=401, detail="Invalid device token")
 
 
@@ -98,7 +101,7 @@ async def query(
     request_id = f"req_{uuid.uuid4().hex[:12]}"
 
     try:
-        reply, model = await codex.ask(request.text, timeout_seconds=30)
+        reply, model = await codex.ask(request.text, timeout_seconds=20)
     except AuthRequiredError as exc:
         raise HTTPException(
             status_code=401,

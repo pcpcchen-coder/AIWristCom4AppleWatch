@@ -1,0 +1,10 @@
+.DS_Store
+.build/
+.venv/
+__pycache__/
+.pytest_cache/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.env
+Config/Local.xcconfig

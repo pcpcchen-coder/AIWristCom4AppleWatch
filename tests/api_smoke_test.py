@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -10,6 +11,8 @@ BASE = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8000"
 def call(path: str, method: str = "GET", payload=None):
     data = None
     headers = {}
+    if token := os.getenv("AIWRIST_DEVICE_TOKEN"):
+        headers["Authorization"] = f"Bearer {token}"
     if payload is not None:
         data = json.dumps(payload).encode("utf-8")
         headers["Content-Type"] = "application/json"
@@ -31,7 +34,7 @@ def main():
     print("health:", status, health)
 
     status, auth = call("/api/v1/auth/status")
-    print("auth:", status, auth)
+    print("auth:", status, {"authenticated": auth.get("authenticated")})
     if not auth.get("authenticated"):
         print("AUTH REQUIRED: run 'codex login' or POST /api/v1/auth/device/start")
         return 2

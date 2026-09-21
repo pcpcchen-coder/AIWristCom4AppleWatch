@@ -1,3 +1,5 @@
+> **2026-09-21 工程狀態更新：** Xcode companion 專案與 mock 往返驗收入口已加入；本地繁中 STT、實機十次往返與完整語音驗收尚未完成。使用者選擇保留兩次 Double Tap，不改系統聽寫。實際進度及操作以 [v0.1 驗收指南](V0_1_ACCEPTANCE.md) 為準。
+
 # Apple Watch Double Tap Design
 
 ## 1. 目標
@@ -192,31 +194,10 @@ NSSpeechRecognitionUsageDescription
 
 若缺少 microphone usage description，系統可能直接終止 App。
 
-## 9. Gateway configuration
+## 9. Provider 設定只在 iPhone
 
-Watch target 增加 custom Info key：
-
-```text
-AIWRIST_GATEWAY_URL
-```
-
-例如：
-
-```text
-https://aiwrist.example.com/
-```
-
-開發 LAN 測試可以先使用可從 Watch 存取的 Mac LAN address，但正式版應使用 HTTPS。
-
-可選：
-
-```text
-AIWRIST_DEVICE_TOKEN
-```
-
-僅作個人 MVP 使用。
-
-正式產品不要把長期 bearer secret 當成不可抽取的祕密放在 App bundle；後續應改成 device registration + Keychain credential。
+Watch 不含 Gateway URL 或 token，所有 request 經 WCSession。
+iPhone 預設 mock；固定回覆十次驗收後，才設定 HTTPS URL 與 Keychain device token。
 
 ## 10. 實體驗收
 
