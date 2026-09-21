@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class QueryRequest(BaseModel):
@@ -8,6 +8,14 @@ class QueryRequest(BaseModel):
     device: Literal["apple_watch"] = "apple_watch"
     locale: str = "zh-TW"
     session_id: str | None = None
+
+    @field_validator("text")
+    @classmethod
+    def nonblank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("text must not be blank")
+        return value
 
 
 class QueryResponse(BaseModel):

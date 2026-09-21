@@ -1,6 +1,7 @@
 import Foundation
 
 enum AppState: Equatable {
+    case preparing
     case idle
     case listening
     case transcribing
@@ -10,6 +11,8 @@ enum AppState: Equatable {
 
     var statusText: String {
         switch self {
+        case .preparing:
+            return "準備麥克風…"
         case .idle:
             return "雙指互點兩下開始說話"
         case .listening:

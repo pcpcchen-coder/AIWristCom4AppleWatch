@@ -1,0 +1,602 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		021C107490CDC2094EC988E9 /* VoiceInteractionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1424E1C2868A8DA0C53DE075 /* VoiceInteractionController.swift */; };
+		190E2BEFAAC6699744EB8022 /* AIWristComApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40FF81B808CE2CB0ED06023D /* AIWristComApp.swift */; };
+		234A88E35AD90474433F9804 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3847C5936628800D1FDB8A /* SpeechRecognizer.swift */; };
+		2456C8D13CAA4FB955311CF3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A824708F7CDE02F8D296C /* ContentView.swift */; };
+		32A4AC456BB66001985C453A /* AIWristWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1736FDC1D61453C7FF884EFE /* AIWristWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3B56327C6FEAEDA63DEC5257 /* GatewayModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD21B3F63BE2FABE411C5489 /* GatewayModels.swift */; };
+		4355D6342631E937A5A3B64A /* CompanionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69C72C0FB341B1A41C201C9 /* CompanionSettings.swift */; };
+		64EDF3A88726959E5919DDF3 /* WatchProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDB414181C61C0ABCCCA111 /* WatchProtocol.swift */; };
+		6D82FE6B24CCF9B8420FE4FC /* WatchProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDB414181C61C0ABCCCA111 /* WatchProtocol.swift */; };
+		7137B6207534B0B5D3758520 /* PhoneBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686ABD38EF70F0D0643E8E6 /* PhoneBridge.swift */; };
+		74D668D794E25AF3E914EF12 /* AIWristCompanionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF18FC6448EAF99D4D7C68E /* AIWristCompanionApp.swift */; };
+		84A93C8D1948AC82361AC8AA /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FACC8BEA4F458DA46BBD4C /* AppState.swift */; };
+		957863058DBCE573F7F0619B /* SpeechOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E332AC335B552CCC275EAB /* SpeechOutput.swift */; };
+		973CF4E8F49E97389BD1DE4A /* CompanionHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35621FA2EC391F3FC9242855 /* CompanionHomeView.swift */; };
+		ADA174FD6826E44366324852 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38367EDF753A6F9E1B0B7B08 /* WatchSessionManager.swift */; };
+		CD2A068935E6975137B94669 /* WatchProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDB414181C61C0ABCCCA111 /* WatchProtocol.swift */; };
+		E080F01B019938390FF94906 /* LLMProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF72E34A6821FB622D44D5D2 /* LLMProvider.swift */; };
+		FC23475E4490CD94EA89792E /* ProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4765F2C582F53DDEFB6AB346 /* ProtocolTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7DC46A4A1299ACB2500A2C8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 624FAF8490198D5C9E7A49B6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3A0670475805C99457AB9E0;
+			remoteInfo = AIWristWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		09D048396C7C0A9262EFA30C /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				32A4AC456BB66001985C453A /* AIWristWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		110405E5F293CC2F32210210 /* AIWristCoreTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AIWristCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1424E1C2868A8DA0C53DE075 /* VoiceInteractionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInteractionController.swift; sourceTree = "<group>"; };
+		1686ABD38EF70F0D0643E8E6 /* PhoneBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBridge.swift; sourceTree = "<group>"; };
+		1736FDC1D61453C7FF884EFE /* AIWristWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIWristWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		201A824708F7CDE02F8D296C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		35621FA2EC391F3FC9242855 /* CompanionHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionHomeView.swift; sourceTree = "<group>"; };
+		38367EDF753A6F9E1B0B7B08 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
+		40FF81B808CE2CB0ED06023D /* AIWristComApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIWristComApp.swift; sourceTree = "<group>"; };
+		4765F2C582F53DDEFB6AB346 /* ProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolTests.swift; sourceTree = "<group>"; };
+		86E332AC335B552CCC275EAB /* SpeechOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechOutput.swift; sourceTree = "<group>"; };
+		9DF18FC6448EAF99D4D7C68E /* AIWristCompanionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIWristCompanionApp.swift; sourceTree = "<group>"; };
+		A69C72C0FB341B1A41C201C9 /* CompanionSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionSettings.swift; sourceTree = "<group>"; };
+		BD21B3F63BE2FABE411C5489 /* GatewayModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewayModels.swift; sourceTree = "<group>"; };
+		CF3847C5936628800D1FDB8A /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
+		D0FACC8BEA4F458DA46BBD4C /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		DF72E34A6821FB622D44D5D2 /* LLMProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProvider.swift; sourceTree = "<group>"; };
+		F6ABA54FA27DE718E7D3CF12 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		FD463347A36103E457C26008 /* AIWristCompanion.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AIWristCompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDDB414181C61C0ABCCCA111 /* WatchProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchProtocol.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		20409E11F519D383782E6DFF /* CoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				4765F2C582F53DDEFB6AB346 /* ProtocolTests.swift */,
+			);
+			name = CoreTests;
+			path = tests/CoreTests;
+			sourceTree = "<group>";
+		};
+		434A021A7C9C14CEB2811C73 = {
+			isa = PBXGroup;
+			children = (
+				91F16D95F33404314DC858F9 /* Config */,
+				20409E11F519D383782E6DFF /* CoreTests */,
+				F328668B8F8D17F549B6C072 /* iPhoneApp */,
+				72A6D64063664C7A3A41B5F3 /* Shared */,
+				A7AAF471C400C542E3D8CBE9 /* WatchApp */,
+				472F75EBBCD4B03AEA8B1D76 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		472F75EBBCD4B03AEA8B1D76 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FD463347A36103E457C26008 /* AIWristCompanion.app */,
+				110405E5F293CC2F32210210 /* AIWristCoreTests.xctest */,
+				1736FDC1D61453C7FF884EFE /* AIWristWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		72A6D64063664C7A3A41B5F3 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				FDDB414181C61C0ABCCCA111 /* WatchProtocol.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		91F16D95F33404314DC858F9 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F6ABA54FA27DE718E7D3CF12 /* Base.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		A2C45A79390D041EEF2ED926 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				1686ABD38EF70F0D0643E8E6 /* PhoneBridge.swift */,
+				86E332AC335B552CCC275EAB /* SpeechOutput.swift */,
+				CF3847C5936628800D1FDB8A /* SpeechRecognizer.swift */,
+				1424E1C2868A8DA0C53DE075 /* VoiceInteractionController.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A3A11C196080A29C4FB1AABF /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				35621FA2EC391F3FC9242855 /* CompanionHomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A7AAF471C400C542E3D8CBE9 /* WatchApp */ = {
+			isa = PBXGroup;
+			children = (
+				40FF81B808CE2CB0ED06023D /* AIWristComApp.swift */,
+				201A824708F7CDE02F8D296C /* ContentView.swift */,
+				A7ABC57D63BE936F1C08C14F /* Models */,
+				A2C45A79390D041EEF2ED926 /* Services */,
+			);
+			path = WatchApp;
+			sourceTree = "<group>";
+		};
+		A7ABC57D63BE936F1C08C14F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D0FACC8BEA4F458DA46BBD4C /* AppState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		ABBDB9F7402AA8B685A2212A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BD21B3F63BE2FABE411C5489 /* GatewayModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F328668B8F8D17F549B6C072 /* iPhoneApp */ = {
+			isa = PBXGroup;
+			children = (
+				9DF18FC6448EAF99D4D7C68E /* AIWristCompanionApp.swift */,
+				ABBDB9F7402AA8B685A2212A /* Models */,
+				FBC8CC1CA67B25AB7B8D5F69 /* Services */,
+				A3A11C196080A29C4FB1AABF /* Views */,
+			);
+			path = iPhoneApp;
+			sourceTree = "<group>";
+		};
+		FBC8CC1CA67B25AB7B8D5F69 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A69C72C0FB341B1A41C201C9 /* CompanionSettings.swift */,
+				DF72E34A6821FB622D44D5D2 /* LLMProvider.swift */,
+				38367EDF753A6F9E1B0B7B08 /* WatchSessionManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5A601AE807588C7842C424B2 /* AIWristCompanion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA44100B1D9DAF9C73F312F8 /* Build configuration list for PBXNativeTarget "AIWristCompanion" */;
+			buildPhases = (
+				F064E6FF11E9CB518164FE49 /* Sources */,
+				09D048396C7C0A9262EFA30C /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				17C3ED584A0C24ECA9604070 /* PBXTargetDependency */,
+			);
+			name = AIWristCompanion;
+			packageProductDependencies = (
+			);
+			productName = AIWristCompanion;
+			productReference = FD463347A36103E457C26008 /* AIWristCompanion.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E3A0670475805C99457AB9E0 /* AIWristWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0CC762CC789E4D3D54DD49FA /* Build configuration list for PBXNativeTarget "AIWristWatch" */;
+			buildPhases = (
+				3154EFD418A5395F72BE2089 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIWristWatch;
+			packageProductDependencies = (
+			);
+			productName = AIWristWatch;
+			productReference = 1736FDC1D61453C7FF884EFE /* AIWristWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		EE0087B3FBF63552EAC8D316 /* AIWristCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA2D796EEE460EA8CF20A51A /* Build configuration list for PBXNativeTarget "AIWristCoreTests" */;
+			buildPhases = (
+				DC0472247F0E027AC2BF3E44 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIWristCoreTests;
+			packageProductDependencies = (
+			);
+			productName = AIWristCoreTests;
+			productReference = 110405E5F293CC2F32210210 /* AIWristCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		624FAF8490198D5C9E7A49B6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					5A601AE807588C7842C424B2 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					E3A0670475805C99457AB9E0 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					EE0087B3FBF63552EAC8D316 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C4A86EF1E3C24B6DA25898DD /* Build configuration list for PBXProject "AIWristCom" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 434A021A7C9C14CEB2811C73;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 472F75EBBCD4B03AEA8B1D76 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5A601AE807588C7842C424B2 /* AIWristCompanion */,
+				E3A0670475805C99457AB9E0 /* AIWristWatch */,
+				EE0087B3FBF63552EAC8D316 /* AIWristCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3154EFD418A5395F72BE2089 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				190E2BEFAAC6699744EB8022 /* AIWristComApp.swift in Sources */,
+				84A93C8D1948AC82361AC8AA /* AppState.swift in Sources */,
+				2456C8D13CAA4FB955311CF3 /* ContentView.swift in Sources */,
+				7137B6207534B0B5D3758520 /* PhoneBridge.swift in Sources */,
+				957863058DBCE573F7F0619B /* SpeechOutput.swift in Sources */,
+				234A88E35AD90474433F9804 /* SpeechRecognizer.swift in Sources */,
+				021C107490CDC2094EC988E9 /* VoiceInteractionController.swift in Sources */,
+				64EDF3A88726959E5919DDF3 /* WatchProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0472247F0E027AC2BF3E44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC23475E4490CD94EA89792E /* ProtocolTests.swift in Sources */,
+				6D82FE6B24CCF9B8420FE4FC /* WatchProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F064E6FF11E9CB518164FE49 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74D668D794E25AF3E914EF12 /* AIWristCompanionApp.swift in Sources */,
+				973CF4E8F49E97389BD1DE4A /* CompanionHomeView.swift in Sources */,
+				4355D6342631E937A5A3B64A /* CompanionSettings.swift in Sources */,
+				3B56327C6FEAEDA63DEC5257 /* GatewayModels.swift in Sources */,
+				E080F01B019938390FF94906 /* LLMProvider.swift in Sources */,
+				CD2A068935E6975137B94669 /* WatchProtocol.swift in Sources */,
+				ADA174FD6826E44366324852 /* WatchSessionManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		17C3ED584A0C24ECA9604070 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3A0670475805C99457AB9E0 /* AIWristWatch */;
+			targetProxy = 7DC46A4A1299ACB2500A2C8E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2225D70EA8FF252FD0B83339 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Config/Watch-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "$(AIWRIST_BUNDLE_ID).watchkitapp";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		248C2FB002493834A60817D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Config/Watch-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "$(AIWRIST_BUNDLE_ID).watchkitapp";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		5DECABF571ECFB79BB2A5308 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F6ABA54FA27DE718E7D3CF12 /* Base.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		8BB9CF28DE0C3599FFAF50A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(AIWRIST_BUNDLE_ID).tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8EAA0F693F98319DC00BB9EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Config/iPhone-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(AIWRIST_BUNDLE_ID)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		922DF969265D79BBD5756D03 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Config/iPhone-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(AIWRIST_BUNDLE_ID)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		98D35724F00F97F134872FCA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(AIWRIST_BUNDLE_ID).tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BBDD6CE1BDE06CDD346FD3D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F6ABA54FA27DE718E7D3CF12 /* Base.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0CC762CC789E4D3D54DD49FA /* Build configuration list for PBXNativeTarget "AIWristWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2225D70EA8FF252FD0B83339 /* Debug */,
+				248C2FB002493834A60817D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AA2D796EEE460EA8CF20A51A /* Build configuration list for PBXNativeTarget "AIWristCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BB9CF28DE0C3599FFAF50A4 /* Debug */,
+				98D35724F00F97F134872FCA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C4A86EF1E3C24B6DA25898DD /* Build configuration list for PBXProject "AIWristCom" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5DECABF571ECFB79BB2A5308 /* Debug */,
+				BBDD6CE1BDE06CDD346FD3D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CA44100B1D9DAF9C73F312F8 /* Build configuration list for PBXNativeTarget "AIWristCompanion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				922DF969265D79BBD5756D03 /* Debug */,
+				8EAA0F693F98319DC00BB9EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 624FAF8490198D5C9E7A49B6 /* Project object */;
+}

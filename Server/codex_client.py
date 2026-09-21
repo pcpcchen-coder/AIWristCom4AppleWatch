@@ -33,8 +33,13 @@ class CodexAppServerClient:
         self._active_error: str | None = None
         self._ask_lock = asyncio.Lock()
         self._write_lock = asyncio.Lock()
+        self._start_lock = asyncio.Lock()
 
     async def start(self) -> None:
+        async with self._start_lock:
+            await self._start()
+
+    async def _start(self) -> None:
         if self._proc and self._proc.returncode is None:
             return
 
@@ -44,7 +49,7 @@ class CodexAppServerClient:
                 "app-server",
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
             )
         except FileNotFoundError as exc:
             raise RuntimeError(
@@ -53,17 +58,22 @@ class CodexAppServerClient:
 
         self._reader_task = asyncio.create_task(self._reader_loop())
 
-        await self._request(
-            "initialize",
-            {
-                "clientInfo": {
-                    "name": "aiwristcom",
-                    "title": "AIWristCom4AppleWatch",
-                    "version": "0.1.0",
-                }
-            },
-        )
-        await self._notify("initialized", {})
+        try:
+            await self._request(
+                "initialize",
+                {
+                    "clientInfo": {
+                        "name": "aiwristcom",
+                        "title": "AIWristCom4AppleWatch",
+                        "version": "0.1.0",
+                    }
+                },
+            )
+            await self._notify("initialized", {})
+
+        except BaseException:
+            await self.close()
+            raise
 
     async def close(self) -> None:
         if self._proc and self._proc.returncode is None:
@@ -102,96 +112,114 @@ class CodexAppServerClient:
             {"limit": 50, "includeHidden": False},
         )
 
-    async def ask(self, text: str, timeout_seconds: float = 30.0) -> tuple[str, str | None]:
-        async with self._ask_lock:
-            account_state = await self.account()
-            account = account_state.get("account")
-            if not account or account.get("type") != "chatgpt":
-                raise AuthRequiredError(
-                    "ChatGPT OAuth login is required. Complete device login first."
-                )
+    async def ask(self, text: str, timeout_seconds: float = 20.0) -> tuple[str, str | None]:
+        # Deadline includes queueing, account/model lookup, thread creation and generation.
+        async with asyncio.timeout(timeout_seconds):
+            async with self._ask_lock:
+                try:
+                    return await self._ask(text, timeout_seconds)
+                finally:
+                    # On cancellation/timeout, stop the process before accepting a new turn.
+                    # This avoids late events contaminating a subsequent request.
+                    if self._active_thread_id is not None:
+                        await self.close()
+                    self._turn_events.clear()
+                    self._turn_buffers.clear()
+                    self._turn_status.clear()
+                    self._active_thread_id = None
+                    self._active_turn_id = None
+                    self._active_final_text = None
+                    self._active_error = None
 
-            model_id = await self._select_default_model()
-
-            thread_params: dict[str, Any] = {
-                "approvalPolicy": "never",
-                "sandbox": "readOnly",
-                "personality": "friendly",
-                "serviceName": "aiwristcom_v0_1",
-            }
-            if model_id:
-                thread_params["model"] = model_id
-
-            thread_result = await self._request("thread/start", thread_params)
-            thread_id = thread_result["thread"]["id"]
-
-            self._turn_events[thread_id] = asyncio.Event()
-            self._turn_buffers[thread_id] = []
-            self._turn_status.pop(thread_id, None)
-            self._active_thread_id = thread_id
-            self._active_turn_id = None
-            self._active_final_text = None
-            self._active_error = None
-
-            watch_prompt = (
-                "你是 Apple Watch 上的精簡語音助理。"
-                "直接回答使用者問題；除非使用者明確要求，否則不要執行 shell、"
-                "不要修改檔案、不要操作電腦。"
-                "回答請適合手錶閱讀與語音朗讀，預設使用繁體中文，簡潔但完整。\n\n"
-                f"使用者：{text}"
+    async def _ask(self, text: str, timeout_seconds: float) -> tuple[str, str | None]:
+        account_state = await self.account()
+        account = account_state.get("account")
+        if not account or account.get("type") != "chatgpt":
+            raise AuthRequiredError(
+                "ChatGPT OAuth login is required. Complete device login first."
             )
 
-            turn_result = await self._request(
-                "turn/start",
-                {
-                    "threadId": thread_id,
-                    "input": [{"type": "text", "text": watch_prompt}],
-                },
+        model_id = await self._select_default_model()
+
+        thread_params: dict[str, Any] = {
+            "approvalPolicy": "never",
+            "sandbox": "readOnly",
+            "personality": "friendly",
+            "serviceName": "aiwristcom_v0_1",
+        }
+        if model_id:
+            thread_params["model"] = model_id
+
+        thread_result = await self._request("thread/start", thread_params)
+        thread_id = thread_result["thread"]["id"]
+
+        self._turn_events[thread_id] = asyncio.Event()
+        self._turn_buffers[thread_id] = []
+        self._turn_status.pop(thread_id, None)
+        self._active_thread_id = thread_id
+        self._active_turn_id = None
+        self._active_final_text = None
+        self._active_error = None
+
+        watch_prompt = (
+            "你是 Apple Watch 上的精簡語音助理。"
+            "直接回答使用者問題；除非使用者明確要求，否則不要執行 shell、"
+            "不要修改檔案、不要操作電腦。"
+            "回答請適合手錶閱讀與語音朗讀，預設使用繁體中文，簡潔但完整。\n\n"
+            f"使用者：{text}"
+        )
+
+        turn_result = await self._request(
+            "turn/start",
+            {
+                "threadId": thread_id,
+                "input": [{"type": "text", "text": watch_prompt}],
+            },
+        )
+
+        turn_id = turn_result.get("turn", {}).get("id")
+        self._active_turn_id = turn_id
+
+        try:
+            await asyncio.wait_for(
+                self._turn_events[thread_id].wait(),
+                timeout=timeout_seconds,
             )
+        except asyncio.TimeoutError as exc:
+            if turn_id:
+                try:
+                    await self._request(
+                        "turn/interrupt",
+                        {"threadId": thread_id, "turnId": turn_id},
+                    )
+                except Exception:
+                    pass
+            raise TimeoutError("Codex turn timed out") from exc
 
-            turn_id = turn_result.get("turn", {}).get("id")
-            self._active_turn_id = turn_id
+        status = self._turn_status.get(thread_id, {})
+        turn = status.get("turn", {})
+        if turn.get("status") != "completed":
+            error = turn.get("error") or {}
+            raise CodexRPCError(error.get("message", "Codex turn failed"))
 
-            try:
-                await asyncio.wait_for(
-                    self._turn_events[thread_id].wait(),
-                    timeout=timeout_seconds,
-                )
-            except asyncio.TimeoutError as exc:
-                if turn_id:
-                    try:
-                        await self._request(
-                            "turn/interrupt",
-                            {"threadId": thread_id, "turnId": turn_id},
-                        )
-                    except Exception:
-                        pass
-                raise TimeoutError("Codex turn timed out") from exc
+        if self._active_error:
+            raise CodexRPCError(self._active_error)
 
-            status = self._turn_status.get(thread_id, {})
-            turn = status.get("turn", {})
-            if turn.get("status") == "failed":
-                error = turn.get("error") or {}
-                raise CodexRPCError(error.get("message", "Codex turn failed"))
+        reply = (self._active_final_text or "").strip()
+        if not reply:
+            reply = "".join(self._turn_buffers.get(thread_id, [])).strip()
+        if not reply:
+            raise CodexRPCError("Codex returned an empty reply")
 
-            if self._active_error:
-                raise CodexRPCError(self._active_error)
+        self._turn_events.pop(thread_id, None)
+        self._turn_buffers.pop(thread_id, None)
+        self._turn_status.pop(thread_id, None)
+        self._active_thread_id = None
+        self._active_turn_id = None
+        self._active_final_text = None
+        self._active_error = None
 
-            reply = (self._active_final_text or "").strip()
-            if not reply:
-                reply = "".join(self._turn_buffers.get(thread_id, [])).strip()
-            if not reply:
-                raise CodexRPCError("Codex returned an empty reply")
-
-            self._turn_events.pop(thread_id, None)
-            self._turn_buffers.pop(thread_id, None)
-            self._turn_status.pop(thread_id, None)
-            self._active_thread_id = None
-            self._active_turn_id = None
-            self._active_final_text = None
-            self._active_error = None
-
-            return reply, model_id
+        return reply, model_id
 
     async def _select_default_model(self) -> str | None:
         result = await self.models()
@@ -201,7 +229,7 @@ class CodexAppServerClient:
                 return item.get("id") or item.get("model")
         if data:
             return data[0].get("id") or data[0].get("model")
-        return None
+        raise CodexRPCError("No available model")
 
     async def _request(self, method: str, params: dict[str, Any] | None) -> dict[str, Any]:
         if not self._proc or self._proc.returncode is not None:
@@ -218,10 +246,9 @@ class CodexAppServerClient:
         if params is not None:
             message["params"] = params
 
-        await self._write(message)
-
         try:
-            return await future
+            await self._write(message)
+            return await asyncio.wait_for(future, timeout=10)
         finally:
             self._pending.pop(request_id, None)
 
@@ -251,6 +278,11 @@ class CodexAppServerClient:
             except json.JSONDecodeError:
                 continue
 
+            if "id" in message and "method" in message:
+                await self._write({"id": message["id"], "error": {
+                    "code": -32601, "message": "Interactive tools are unsupported by AIWrist v0.1"}})
+                continue
+
             if "id" in message:
                 request_id = message.get("id")
                 future = self._pending.get(request_id)
@@ -266,7 +298,12 @@ class CodexAppServerClient:
 
             method = message.get("method")
             params = message.get("params") or {}
-            thread_id = params.get("threadId") or self._active_thread_id
+            thread_id = params.get("threadId")
+            if thread_id != self._active_thread_id or thread_id is None:
+                continue
+            event_turn = params.get("turnId") or (params.get("turn") or {}).get("id")
+            if self._active_turn_id and event_turn and event_turn != self._active_turn_id:
+                continue
 
             if method == "item/agentMessage/delta" and thread_id:
                 delta = params.get("delta")
@@ -304,3 +341,11 @@ class CodexAppServerClient:
                     event = self._turn_events.get(thread_id)
                     if event:
                         event.set()
+
+        # EOF must fail waiters rather than leave them hanging until the UI deadline.
+        for future in list(self._pending.values()):
+            if not future.done():
+                future.set_exception(CodexRPCError("Codex app-server disconnected"))
+        self._active_error = "Codex app-server disconnected"
+        for event in self._turn_events.values():
+            event.set()

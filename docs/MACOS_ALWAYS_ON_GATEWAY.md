@@ -18,8 +18,9 @@ Apple Watch Double Tap 只能啟動 Watch App 當前畫面的 primary action。
 
 ```text
 Double Tap
-→ Watch records
-→ POST Gateway
+→ Watch records / local STT
+→ WCSession to iPhone
+→ iPhone POST Gateway
 → connection failed
 ```
 
@@ -99,10 +100,10 @@ cd Server
 
 - 關機
 - 深度睡眠且網路不可達
-- 不在 Watch 能連到的網路
+- 不在 iPhone 能連到的網路
 
-Watch 仍然無法存取 Gateway。
+iPhone 將無法存取 provider，並透過 WCSession 回覆 Watch 錯誤。
 
 v0.1 建議先在同一個 Wi-Fi/LAN 完成測試。
 
-若未來要讓 Apple Watch 透過 cellular 在外面也能用，需要把 Gateway 部署到可安全存取的 HTTPS endpoint，或建立 VPN / secure tunnel。
+iPhone 連 provider 必須使用受控的 HTTPS endpoint；Watch 仍只使用 WCSession，不支援直接經 cellular 連 Gateway。

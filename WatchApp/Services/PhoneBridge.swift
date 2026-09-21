@@ -1,103 +1,51 @@
 import Foundation
 import WatchConnectivity
 
-enum PhoneBridgeError: LocalizedError {
-    case unsupported
-    case notActivated
-    case invalidReply
-    case phoneError(String)
-
-    var errorDescription: String? {
-        switch self {
-        case .unsupported:
-            return "這支 Apple Watch 無法使用 WatchConnectivity"
-        case .notActivated:
-            return "尚未連接 iPhone companion app"
-        case .invalidReply:
-            return "iPhone 回傳格式錯誤"
-        case .phoneError(let message):
-            return message
-        }
-    }
-}
-
-/// The Watch never talks to an LLM server directly.
-/// Interactive requests always go through the paired iPhone companion app.
+@MainActor
 final class PhoneBridge: NSObject, WCSessionDelegate {
     static let shared = PhoneBridge()
-
-    private let session: WCSession
-
+    private let session = WCSession.default
     private override init() {
-        self.session = WCSession.default
         super.init()
-
         guard WCSession.isSupported() else { return }
         session.delegate = self
         session.activate()
     }
 
     func ask(_ text: String, locale: String = "zh-TW") async throws -> String {
-        guard WCSession.isSupported() else {
-            throw PhoneBridgeError.unsupported
+        guard WCSession.isSupported(), session.activationState == .activated else {
+            throw ProtocolError.remote("尚未連接 iPhone companion，請稍後重試")
         }
-
-        guard session.activationState == .activated else {
-            throw PhoneBridgeError.notActivated
+        guard session.isCompanionAppInstalled else {
+            throw ProtocolError.remote("請先在配對 iPhone 安裝 Companion")
         }
-
-        let requestID = UUID().uuidString
-
-        let message: [String: Any] = [
-            "type": "query",
-            "request_id": requestID,
-            "text": text,
-            "locale": locale
-        ]
-
-        return try await withCheckedThrowingContinuation { continuation in
-            session.sendMessage(
-                message,
-                replyHandler: { reply in
-                    if let error = reply["error"] as? String {
-                        continuation.resume(
-                            throwing: PhoneBridgeError.phoneError(error)
-                        )
-                        return
-                    }
-
-                    guard
-                        let replyRequestID = reply["request_id"] as? String,
-                        replyRequestID == requestID,
-                        let answer = reply["reply"] as? String,
-                        !answer.isEmpty
-                    else {
-                        continuation.resume(
-                            throwing: PhoneBridgeError.invalidReply
-                        )
-                        return
-                    }
-
-                    continuation.resume(returning: answer)
-                },
-                errorHandler: { error in
-                    continuation.resume(
-                        throwing: PhoneBridgeError.phoneError(
-                            "無法連到 iPhone：\(error.localizedDescription)"
-                        )
-                    )
-                }
-            )
+        guard session.isReachable else {
+            throw ProtocolError.remote("找不到 iPhone，請確認連線並開啟 Companion")
+        }
+        let query = try WatchQuery(text: text, locale: locale)
+        let latch = ReplyLatch()
+        let deadline = Task {
+            do { try await Task.sleep(for: .seconds(30)) }
+            catch { return }
+            latch.finish(.failure(ProtocolError.timeout))
+        }
+        defer { deadline.cancel() }
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                latch.install(continuation)
+                session.sendMessage(query.message, replyHandler: { message in
+                    latch.finish(Result { try WatchReply.decode(message, for: query.requestID) })
+                }, errorHandler: { _ in
+                    latch.finish(.failure(ProtocolError.remote("iPhone 連線中斷，請重試")))
+                })
+            }
+        } onCancel: {
+            latch.finish(.failure(CancellationError()))
         }
     }
 
-    // MARK: - WCSessionDelegate
-
-    func session(
-        _ session: WCSession,
-        activationDidCompleteWith activationState: WCSessionActivationState,
-        error: Error?
-    ) {
-        // v0.1: state is checked at send time.
-    }
+    nonisolated func session(_ session: WCSession,
+                            activationDidCompleteWith activationState: WCSessionActivationState,
+                            error: Error?) {}
 }

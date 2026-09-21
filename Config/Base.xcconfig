@@ -1,0 +1,3 @@
+AIWRIST_BUNDLE_ID = com.example.AIWristCom
+DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"

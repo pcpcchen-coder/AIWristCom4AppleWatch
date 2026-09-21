@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var controller = VoiceInteractionController()
 
     var body: some View {
@@ -11,8 +12,18 @@ struct ContentView: View {
             content
 
             primaryActionButton
+            if controller.state == .idle {
+                Button("連線測試 \(controller.roundTrips)/10") { controller.testConnection() }
+                    .font(.caption2)
+                if !controller.lastReply.isEmpty {
+                    Button("再播放") { controller.replay() }.font(.caption2)
+                }
+            }
         }
         .padding(.horizontal, 8)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { controller.sceneDidEnterBackground() }
+        }
     }
 
     @ViewBuilder
@@ -20,7 +31,7 @@ struct ContentView: View {
         switch controller.state {
         case .idle:
             if controller.lastReply.isEmpty {
-                Text("抬手後 Double Tap")
+                Text("本地 STT 待接入\n先測 Watch ↔ iPhone")
                     .font(.caption)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -47,7 +58,7 @@ struct ContentView: View {
                 .lineLimit(3)
             }
 
-        case .transcribing, .sending:
+        case .preparing, .transcribing, .sending:
             VStack(spacing: 6) {
                 ProgressView()
                 Text(controller.state.statusText)

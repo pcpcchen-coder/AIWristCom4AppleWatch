@@ -1,0 +1,20 @@
+name: v0.1 checks
+on: [push, pull_request]
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r Server/requirements.txt pytest httpx
+      - run: python -m pytest -q tests/test_server.py
+      - run: python scripts/check_boundaries.py
+  apple:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+      - run: xcodebuild -project AIWristCom.xcodeproj -scheme AIWristCompanion -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - run: xcodebuild -project AIWristCom.xcodeproj -scheme AIWristWatch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build

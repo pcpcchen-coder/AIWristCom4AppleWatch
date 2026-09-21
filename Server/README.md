@@ -1,3 +1,5 @@
+> 先完成 [Watch↔iPhone 固定回覆十次驗收](../docs/V0_1_ACCEPTANCE.md)，才啟用此 provider。後端測試用 fake 不代表 OAuth 或硬體驗收完成。
+
 # v0.1 Backend — ChatGPT OAuth via Codex App Server
 
 v0.1 不使用 OpenAI API key。
@@ -8,6 +10,8 @@ v0.1 不使用 OpenAI API key。
 
 ```text
 Apple Watch
+  ↓ WatchConnectivity
+Paired iPhone Companion
   ↓ HTTPS JSON
 FastAPI Gateway
   ↓ local stdio / JSON-RPC
@@ -82,7 +86,7 @@ curl http://127.0.0.1:8000/api/v1/auth/status
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
 Windows PowerShell 啟用 venv：
@@ -121,15 +125,15 @@ curl -X POST http://127.0.0.1:8000/api/v1/query \
 }
 ```
 
-## Watch 對外連線時的安全設定
+## iPhone 對 provider 連線設定
 
 開發初期可先只在 LAN 測試。
 
-若要讓 Apple Watch 經網際網路連線：
+iPhone 連接 provider host 時：
 
 - FastAPI 前面一定要放 HTTPS reverse proxy。
 - 設定 `AIWRIST_DEVICE_TOKEN`。
-- Watch 以 `Authorization: Bearer <token>` 呼叫 Gateway。
+- iPhone 以 `Authorization: Bearer <token>` 呼叫 Gateway。
 - 不要把 `~/.codex/auth.json` 放進 repo、Log 或 Watch。
 - 不要直接把 Codex App Server WebSocket 暴露到 Internet；v0.1 固定使用本機 stdio，由 FastAPI 包住。
 
