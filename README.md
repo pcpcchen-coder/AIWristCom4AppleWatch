@@ -38,8 +38,8 @@ iPhone local model / OpenAI API / Claude / Gemini / OpenClaw / Hermes / FamilyRe
 - SwiftUI UI
 - 按鈕開始 / 停止錄音
 - 中文語音轉文字
-- 將文字送到後端 AI Gateway
-- 接收 JSON 回覆
+- 將文字透過 WatchConnectivity 送到 paired iPhone
+- iPhone companion 呼叫 LLM provider 並把答案回傳 Watch
 - Watch 顯示 AI 答案
 - Watch 朗讀 AI 答案
 - 錯誤狀態與重新嘗試
@@ -269,49 +269,40 @@ enum AppState {
 
 ---
 
-## 6. Watch → Server API Contract
+## 6. Watch ↔ iPhone Contract
 
-### Request
+Watch 與 iPhone 不走 HTTP，而是使用 `WCSession.sendMessage`。
 
-```http
-POST /api/v1/query
-Content-Type: application/json
-Authorization: Bearer <device-token>
-```
+### Watch → iPhone
 
-```json
+```text
 {
-  "text": "幫我整理一下今天下午的工作重點",
-  "device": "apple_watch",
-  "locale": "zh-TW",
-  "session_id": "optional-session-id"
+  type: "query",
+  request_id: "...",
+  text: "幫我整理一下今天下午的工作重點",
+  locale: "zh-TW"
 }
 ```
 
-### Response
+### iPhone → Watch
 
-```json
+```text
 {
-  "ok": true,
-  "request_id": "req_123",
-  "reply": "你今天下午可以先處理三件事……",
-  "intent": "general_chat",
-  "speak": true
+  request_id: "...",
+  reply: "你今天下午可以先處理三件事……"
 }
 ```
 
 ### Error
 
-```json
+```text
 {
-  "ok": false,
-  "request_id": "req_123",
-  "error": {
-    "code": "MODEL_TIMEOUT",
-    "message": "AI 暫時沒有回應"
-  }
+  request_id: "...",
+  error: "AI 服務暫時沒有回應"
 }
 ```
+
+iPhone 後方的 provider 若使用 FastAPI/Codex Gateway，HTTP contract 僅存在於 **iPhone ↔ Provider**，Watch 完全不接觸。
 
 ---
 
@@ -348,28 +339,21 @@ def route(text: str) -> str:
 ### 不要做
 
 - 不要把 OpenAI / Anthropic API Key 寫死在 Watch App。
-- 不要讓 Watch 直接呼叫所有第三方服務。
+- 不要把 Gateway URL、device token 或 ChatGPT OAuth token 放進 Watch App。
+- 不要讓 Watch 直接呼叫第三方 LLM 服務。
 - 不要把 server admin token 放進 repo。
-- 不要把敏感設定 commit 到 Git。
 
 ### 建議做法
 
-Watch 只知道：
-
-```text
-AI Gateway URL
-Device token
-```
-
-真正的模型 API Key 放在 Server：
-
 ```text
 Watch
-  ↓
-Your Gateway
-  ↓
-OpenAI / Anthropic / Local Model
+  ↓ WatchConnectivity
+iPhone Companion
+  ↓ provider-specific auth/network
+LLM Provider
 ```
+
+Watch 只知道 paired iPhone；provider 設定集中在 iPhone。
 
 ---
 
@@ -388,12 +372,13 @@ OpenAI / Anthropic / Local Model
 - [ ] 10 秒語音可正常轉文字
 - [ ] 轉錄結果可在送出前至少 debug 顯示
 
-### C. API
+### C. WatchConnectivity / iPhone
 
-- [ ] Watch 可透過 HTTPS 呼叫 Server
-- [ ] Server 正常解析 request JSON
-- [ ] Server 可回傳標準 response JSON
-- [ ] 網路斷線時 App 不 crash
+- [ ] Watch 與 paired iPhone 的 WCSession 都是 activated
+- [ ] Watch 可用 sendMessage 把文字送到 iPhone
+- [ ] iPhone companion 被喚醒並回覆
+- [ ] iPhone 不可用時 Watch 不 crash
+- [ ] provider 不可用時錯誤能從 iPhone 回到 Watch
 
 ### D. AI
 
@@ -412,13 +397,15 @@ OpenAI / Anthropic / Local Model
 
 ```text
 Open App
-→ Tap
+→ Double Tap
 → Speak
+→ Double Tap
 → STT
-→ POST API
-→ LLM
-→ JSON response
-→ Display
+→ WatchConnectivity
+→ iPhone Companion
+→ LLM Provider
+→ iPhone reply
+→ Watch display
 → TTS
 → Back to idle
 ```
@@ -431,11 +418,11 @@ Open App
 
 ### Phase 0 — Environment
 
-1. Mac 安裝最新版 Xcode
-2. Apple Watch 與 iPhone 正常配對
-3. Xcode 登入 Apple ID
-4. 建立 watchOS App project
-5. Hello World 跑到實體 Apple Watch
+1. Mac 僅作為 Xcode 開發機。
+2. Apple Watch 與 iPhone 正常配對。
+3. Xcode 登入 Apple ID。
+4. 建立 **iOS App + Watch companion target**，不是 Watch-only project。
+5. iPhone companion 與 Watch App 都能跑到實體裝置。
 
 ### Phase 1 — Fake AI
 
@@ -459,30 +446,37 @@ Speak → Text
 
 畫面印出辨識結果。
 
-### Phase 3 — API
+### Phase 3 — WatchConnectivity
 
 先不要接真模型。
 
-Server 固定回：
+iPhone 收到 Watch request 後固定回：
 
-```json
-{
-  "ok": true,
-  "reply": "Server 已收到你的訊息",
-  "intent": "general_chat",
-  "speak": true
-}
+```text
+"iPhone 已收到你的訊息"
 ```
 
-確認 Watch ↔ Server。
+確認：
+
+```text
+Watch → iPhone → Watch
+```
+
+這一步必須先獨立通過。
 
 ### Phase 4 — 真實 AI（ChatGPT OAuth）
 
-v0.1 固定使用：
+v0.1 的 ChatGPT OAuth provider 暫定：
 
 ```text
-FastAPI → codex app-server → ChatGPT OAuth
+Watch
+→ iPhone Companion
+→ FastAPI/Codex Host
+→ codex app-server
+→ ChatGPT OAuth
 ```
+
+Mac 只可作為開發期 Codex host，不是 Watch 的直接服務端。
 
 先執行 `codex login`，或呼叫 `POST /api/v1/auth/device/start` 完成 device-code login。
 
@@ -579,12 +573,12 @@ Voice
 ### 原則 2：先完成最短閉環
 
 ```text
-Voice → Text → API → AI → Text → Voice
+Voice → Text → iPhone → AI → iPhone → Voice
 ```
 
-### 原則 3：所有外部能力走 Gateway
+### 原則 3：iPhone 是唯一近端 Hub
 
-不要讓 Watch 直接整合十個服務。
+不要讓 Watch 直接整合 Internet provider。所有外部能力先進 iPhone Companion，再由 iPhone Router 決定去哪裡。
 
 ### 原則 4：API Contract 先固定
 
@@ -611,5 +605,6 @@ Watch 與 Agent backend 才能獨立演進。
 
 - Watch Double Tap： [docs/DOUBLE_TAP_DESIGN.md](docs/DOUBLE_TAP_DESIGN.md)
 - ChatGPT OAuth backend： [docs/CHATGPT_OAUTH_BACKEND.md](docs/CHATGPT_OAUTH_BACKEND.md)
-- macOS 後端自動常駐： [docs/MACOS_ALWAYS_ON_GATEWAY.md](docs/MACOS_ALWAYS_ON_GATEWAY.md)
+- iPhone-centered architecture： [docs/IPHONE_COMPANION_ARCHITECTURE.md](docs/IPHONE_COMPANION_ARCHITECTURE.md)
+- 選配 macOS Codex host： [docs/MACOS_ALWAYS_ON_GATEWAY.md](docs/MACOS_ALWAYS_ON_GATEWAY.md)
 - Watch Xcode setup： [WatchApp/README.md](WatchApp/README.md)
