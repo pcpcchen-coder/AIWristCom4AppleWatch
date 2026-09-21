@@ -11,9 +11,13 @@ Speech-to-Text
   ↓
 AI Gateway / Agent Router
   ↓
-ChatGPT / Claude / Gemini / Local LLM / OpenClaw / Hermes / FamilyRecorder / Calendar / ToDo
+Codex App Server
+  ↓ ChatGPT OAuth（v0.1）
+ChatGPT/Codex subscription model
   ↓
 文字 + 語音回覆
+
+Future: Claude / Gemini / Local LLM / OpenClaw / Hermes / FamilyRecorder / Calendar / ToDo
 ```
 
 ---
@@ -112,6 +116,10 @@ ChatGPT / Claude / Gemini / Local LLM / OpenClaw / Hermes / FamilyRecorder / Cal
 
 ## 3. 建議架構
 
+> **v0.1 backend 決策：使用官方 Codex App Server + ChatGPT OAuth，不使用 OpenAI API key。**
+>
+> 詳見 [docs/CHATGPT_OAUTH_BACKEND.md](docs/CHATGPT_OAUTH_BACKEND.md)。
+
 ```text
 ┌──────────────────────────────┐
 │         Apple Watch          │
@@ -136,13 +144,16 @@ ChatGPT / Claude / Gemini / Local LLM / OpenClaw / Hermes / FamilyRecorder / Cal
 │ └─ response formatter        │
 └──────────────┬───────────────┘
                │
-      ┌────────┼─────────┐
-      ▼        ▼         ▼
-   OpenAI    Claude    Local LLM
-      │        │         │
-      └────────┴────┬────┘
-                    ▼
-             Future Agent Tools
+               ▼
+┌──────────────────────────────┐
+│      codex app-server        │
+│ local stdio / JSON-RPC       │
+│ ChatGPT managed OAuth        │
+└──────────────┬───────────────┘
+               ▼
+      ChatGPT/Codex entitlement
+
+Future providers stay behind the same Gateway contract.
 ```
 
 ---
@@ -155,6 +166,7 @@ AIWristCom4AppleWatch/
 ├─ README.md
 ├─ docs/
 │  ├─ ARCHITECTURE.md
+│  ├─ CHATGPT_OAUTH_BACKEND.md
 │  ├─ WEEKEND_BUILD_PLAN.md
 │  └─ AGENT_BUILD_PROMPT.md
 │
@@ -178,14 +190,10 @@ AIWristCom4AppleWatch/
 │     └─ ErrorView.swift
 │
 ├─ Server/
+│  ├─ README.md
 │  ├─ main.py
-│  ├─ router.py
+│  ├─ codex_client.py
 │  ├─ models.py
-│  ├─ providers/
-│  │  ├─ openai_provider.py
-│  │  ├─ anthropic_provider.py
-│  │  └─ local_provider.py
-│  ├─ config.example.yaml
 │  └─ requirements.txt
 │
 └─ tests/
@@ -441,11 +449,22 @@ Server 固定回：
 
 確認 Watch ↔ Server。
 
-### Phase 4 — 真實 AI
+### Phase 4 — 真實 AI（ChatGPT OAuth）
 
-只接一個 provider。
+v0.1 固定使用：
 
-建議先接 OpenAI 或 Anthropic 其中一個。
+```text
+FastAPI → codex app-server → ChatGPT OAuth
+```
+
+先執行 `codex login`，或呼叫 `POST /api/v1/auth/device/start` 完成 device-code login。
+
+驗收：
+
+- `GET /api/v1/auth/status` 顯示 authenticated=true
+- 不設定 `OPENAI_API_KEY`
+- `POST /api/v1/query` 能回傳 AI 回答
+- `GET /api/v1/limits` 可讀取 ChatGPT/Codex rate limits
 
 ### Phase 5 — TTS
 
