@@ -1,0 +1,12 @@
+[
+  {
+    "text": "請用一句繁體中文介紹 BMS。",
+    "device": "apple_watch",
+    "locale": "zh-TW"
+  },
+  {
+    "text": "把 42 公里換算成英里，簡短回答。",
+    "device": "apple_watch",
+    "locale": "zh-TW"
+  }
+]
