@@ -33,21 +33,36 @@ Apple Watch 僅負責四件事：
 ### Server
 
 #### main.py
-HTTP entry point。
+FastAPI HTTP entry point。Apple Watch 只與此服務溝通。
 
-#### router.py
-根據 intent 決定要呼叫哪個 agent/provider。
+#### codex_client.py
+啟動官方 `codex app-server` child process，使用預設 stdio JSONL transport，並實作：
 
-#### providers/*
-統一封裝不同 LLM。
+- initialize / initialized
+- account/read
+- account/login/start（ChatGPT device code）
+- account/rateLimits/read
+- model/list
+- thread/start
+- turn/start
+- item/agentMessage/delta
+- turn/completed
 
-Provider interface 建議：
+### v0.1 LLM Provider
 
-```python
-class LLMProvider:
-    async def generate(self, text: str, context: dict | None = None) -> str:
-        ...
+```text
+FastAPI
+  ↓
+codex app-server
+  ↓
+ChatGPT managed OAuth
+  ↓
+ChatGPT/Codex subscription entitlement
 ```
+
+v0.1 不使用 OpenAI API key，也不直接呼叫 OpenAI Responses API。
+
+模型名稱不 hard-code；啟動 query 時使用 `model/list` 取得目前帳號可用模型並優先選 `isDefault=true`。
 
 ## 3. API Versioning
 
@@ -100,3 +115,56 @@ Gateway
 ```
 
 但 watchOS 背景生命週期與網路中斷處理會複雜很多，所以不放在 v0.1。
+
+
+## 7. Authentication boundary
+
+OAuth token 僅由 Codex 管理。
+
+```text
+Apple Watch ──X── ChatGPT OAuth token
+FastAPI     ──X── raw token parsing
+
+codex app-server
+  └─ owns OAuth login
+  └─ persists credentials
+  └─ refreshes credentials
+```
+
+第一次登入可用：
+
+```
+codex login
+```
+
+或 Gateway 的 device-code flow：
+
+```
+POST /api/v1/auth/device/start
+```
+
+## 8. Transport decision
+
+v0.1：
+
+```text
+FastAPI parent process
+  └─ codex app-server
+      └─ stdio JSONL
+```
+
+不使用 remote WebSocket transport。
+
+Watch 只存取 FastAPI HTTPS endpoint。
+
+## 9. Subscription limits
+
+ChatGPT OAuth 不代表無限制使用。
+
+Gateway 暴露：
+
+```
+GET /api/v1/limits
+```
+
+讀取 ChatGPT/Codex rate-limit window，日後可在 Watch 顯示使用狀態。
