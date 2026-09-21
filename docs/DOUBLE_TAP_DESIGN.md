@@ -21,9 +21,11 @@ AIWristCom 畫面在前景
         ↓
 Speech-to-Text
         ↓
-FastAPI Gateway
+WatchConnectivity
         ↓
-Codex App Server + ChatGPT OAuth
+Paired iPhone Companion
+        ↓
+LLM Provider
         ↓
 AI answer
         ↓
@@ -243,7 +245,7 @@ mic active
 UI shows waveform
 ```
 
-### Test DT-02 — Stop and send
+### Test DT-02 — Stop and send through iPhone
 
 Given：
 
