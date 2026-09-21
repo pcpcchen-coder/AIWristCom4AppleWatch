@@ -1,5 +1,7 @@
+import Combine
 import Foundation
 
+@MainActor
 final class CompanionSettings: ObservableObject {
     static let shared = CompanionSettings()
 
