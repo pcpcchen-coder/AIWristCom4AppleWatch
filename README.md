@@ -57,6 +57,26 @@ Future: Claude / Gemini / Local LLM / OpenClaw / Hermes / FamilyRecorder / Calen
 
 ---
 
+## Double Tap 操作（v0.1）
+
+watchOS 11+ 使用官方 `handGestureShortcut(.primaryAction)`：
+
+```text
+App 在前景 / idle
+→ Double Tap
+→ 開始聆聽
+→ 說話
+→ 再次 Double Tap
+→ 停止 + STT + Gateway + AI
+→ 顯示並朗讀回答
+```
+
+重要限制：Double Tap 不是第三方 App 的全域 hotkey；AIWristCom 必須已在前景，而且 primary-action Button 必須在螢幕上。從 Watch Face 快速進入的下一階段會以 complication / Smart Stack 作入口。
+
+完整設計與驗收： [docs/DOUBLE_TAP_DESIGN.md](docs/DOUBLE_TAP_DESIGN.md)
+
+---
+
 ## 2. 使用者體驗
 
 ### 主畫面
