@@ -29,6 +29,7 @@ final class SpeechRecognizer {
 
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
+    private var tapInstalled = false
     private(set) var latestText = ""
 
     func requestPermissions() async throws {
@@ -76,6 +77,7 @@ final class SpeechRecognizer {
         ) { [weak audioRequest] buffer, _ in
             audioRequest?.append(buffer)
         }
+        tapInstalled = true
 
         task = recognizer.recognitionTask(with: audioRequest) { [weak self] result, error in
             Task { @MainActor in
@@ -133,6 +135,9 @@ final class SpeechRecognizer {
             audioEngine.stop()
         }
 
-        audioEngine.inputNode.removeTap(onBus: 0)
+        if tapInstalled {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            tapInstalled = false
+        }
     }
 }
