@@ -2,10 +2,14 @@
 
 ## 決策
 
-AIWristCom v0.1 的 LLM backend 使用：
+AIWristCom v0.1 的 ChatGPT OAuth provider 使用：
 
 ```text
-FastAPI
+Apple Watch
+  ↓ WatchConnectivity
+Paired iPhone Companion
+  ↓ HTTPS
+FastAPI / Codex Gateway Host
   ↓
 Official Codex App Server
   ↓
@@ -13,6 +17,8 @@ ChatGPT managed OAuth
   ↓
 ChatGPT/Codex subscription entitlement
 ```
+
+**重點：FastAPI/Codex Gateway 是 iPhone 後方的 provider host，不是 Watch 的直接服務端。**
 
 不使用：
 
@@ -78,6 +84,8 @@ turn/completed
         ↓
 FastAPI 組合 final reply
         ↓
+iPhone Companion
+        ↓ WatchConnectivity reply
 Watch
 ```
 
@@ -132,7 +140,7 @@ FastAPI process
         └─ stdio JSONL
 ```
 
-Watch 永遠只接 FastAPI HTTPS。
+Watch 永遠不直接接 FastAPI。只有 iPhone Companion 會連 FastAPI/Codex host。
 
 ### 4. Personal MVP first
 
@@ -151,4 +159,22 @@ Provider C: OpenAI API              ← 需要時計費
 Provider D: Anthropic API           ← 需要時計費
 ```
 
-Watch API contract 不變，只替換 Gateway provider。
+Watch ↔ iPhone 的 WatchConnectivity contract 不變，只替換 iPhone 的 LLM provider。
+
+
+## iOS 限制
+
+OpenAI 目前文件化的 ChatGPT 訂閱登入，是針對 Codex client / Codex App Server。
+
+雖然 App Server 有實驗性的 `chatgptAuthTokens` 模式，可讓「已自行管理 ChatGPT 認證生命週期」的 host app 提供 token，但目前沒有一般第三方 iOS app 可直接取得並使用 ChatGPT 訂閱推論權益的公開 iOS SDK 流程。
+
+因此目前要同時滿足：
+
+```text
+ChatGPT subscription entitlement
++ no OpenAI API billing
+```
+
+仍需要一個可執行 Codex runtime 的 provider host。
+
+iPhone 仍然是 Watch 的唯一近端 Hub。
