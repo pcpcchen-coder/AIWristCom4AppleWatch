@@ -27,6 +27,10 @@ class CodexAppServerClient:
         self._turn_events: dict[str, asyncio.Event] = {}
         self._turn_buffers: dict[str, list[str]] = {}
         self._turn_status: dict[str, dict[str, Any]] = {}
+        self._active_thread_id: str | None = None
+        self._active_turn_id: str | None = None
+        self._active_final_text: str | None = None
+        self._active_error: str | None = None
         self._ask_lock = asyncio.Lock()
         self._write_lock = asyncio.Lock()
 
@@ -124,6 +128,10 @@ class CodexAppServerClient:
             self._turn_events[thread_id] = asyncio.Event()
             self._turn_buffers[thread_id] = []
             self._turn_status.pop(thread_id, None)
+            self._active_thread_id = thread_id
+            self._active_turn_id = None
+            self._active_final_text = None
+            self._active_error = None
 
             watch_prompt = (
                 "你是 Apple Watch 上的精簡語音助理。"
@@ -142,6 +150,7 @@ class CodexAppServerClient:
             )
 
             turn_id = turn_result.get("turn", {}).get("id")
+            self._active_turn_id = turn_id
 
             try:
                 await asyncio.wait_for(
@@ -165,13 +174,22 @@ class CodexAppServerClient:
                 error = turn.get("error") or {}
                 raise CodexRPCError(error.get("message", "Codex turn failed"))
 
-            reply = "".join(self._turn_buffers.get(thread_id, [])).strip()
+            if self._active_error:
+                raise CodexRPCError(self._active_error)
+
+            reply = (self._active_final_text or "").strip()
+            if not reply:
+                reply = "".join(self._turn_buffers.get(thread_id, [])).strip()
             if not reply:
                 raise CodexRPCError("Codex returned an empty reply")
 
             self._turn_events.pop(thread_id, None)
             self._turn_buffers.pop(thread_id, None)
             self._turn_status.pop(thread_id, None)
+            self._active_thread_id = None
+            self._active_turn_id = None
+            self._active_final_text = None
+            self._active_error = None
 
             return reply, model_id
 
@@ -248,7 +266,7 @@ class CodexAppServerClient:
 
             method = message.get("method")
             params = message.get("params") or {}
-            thread_id = params.get("threadId")
+            thread_id = params.get("threadId") or self._active_thread_id
 
             if method == "item/agentMessage/delta" and thread_id:
                 delta = params.get("delta")
@@ -259,13 +277,29 @@ class CodexAppServerClient:
                 item = params.get("item") or {}
                 if item.get("type") == "agentMessage":
                     full_text = item.get("text")
-                    if isinstance(full_text, str) and not self._turn_buffers.get(thread_id):
-                        self._turn_buffers.setdefault(thread_id, []).append(full_text)
+                    phase = item.get("phase")
+                    if isinstance(full_text, str):
+                        if phase == "final_answer":
+                            self._active_final_text = full_text
+                        elif not self._active_final_text and not self._turn_buffers.get(thread_id):
+                            self._turn_buffers.setdefault(thread_id, []).append(full_text)
+
+            elif method == "error":
+                error = params.get("error") or {}
+                self._active_error = error.get("message") or str(error)
 
             elif method == "turn/completed":
                 turn = params.get("turn") or {}
-                thread_id = params.get("threadId") or turn.get("threadId")
-                if thread_id:
+                turn_id = turn.get("id")
+                if (
+                    self._active_thread_id
+                    and (
+                        not self._active_turn_id
+                        or not turn_id
+                        or turn_id == self._active_turn_id
+                    )
+                ):
+                    thread_id = self._active_thread_id
                     self._turn_status[thread_id] = params
                     event = self._turn_events.get(thread_id)
                     if event:
