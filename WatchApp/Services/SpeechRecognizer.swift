@@ -16,16 +16,19 @@ struct UnavailableLocalTranscriber: LocalTranscriber {
 final class SpeechRecognizer {
     private var recorder: AVAudioRecorder?
     private var file: URL?
+    private var generation = UUID()
     private let transcriber: any LocalTranscriber
     init(transcriber: any LocalTranscriber = UnavailableLocalTranscriber()) {
         self.transcriber = transcriber
     }
     func start() async throws {
         cancel()
+        let id = generation
         guard await AVAudioApplication.requestRecordPermission() else {
             throw ProtocolError.remote("請在 Watch 設定允許麥克風權限")
         }
         try Task.checkCancellation()
+        guard id == generation else { throw CancellationError() }
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.record, mode: .default)
         // Watch audio activation is asynchronous and must use activate(options:).
@@ -38,6 +41,7 @@ final class SpeechRecognizer {
         }
         do {
             try Task.checkCancellation()
+            guard id == generation else { throw CancellationError() }
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".wav")
             file = url
             let recorder = try AVAudioRecorder(url: url, settings: [
@@ -50,17 +54,21 @@ final class SpeechRecognizer {
             ])
             self.recorder = recorder
             guard recorder.record() else { throw ProtocolError.remote("無法開始錄音") }
-        } catch { cancel(); throw error }
+        } catch { if id == generation { cancel() }; throw error }
     }
     func stop() async throws -> String {
         recorder?.stop()
         recorder = nil
         try? AVAudioSession.sharedInstance().setActive(false)
         guard let file else { throw ProtocolError.remote("沒有錄音") }
-        defer { try? FileManager.default.removeItem(at: file); self.file = nil }
+        defer {
+            try? FileManager.default.removeItem(at: file)
+            if self.file == file { self.file = nil }
+        }
         return try await transcriber.transcribe(file: file, locale: "zh-TW")
     }
     func cancel() {
+        generation = UUID()
         recorder?.stop()
         recorder = nil
         if let file { try? FileManager.default.removeItem(at: file) }

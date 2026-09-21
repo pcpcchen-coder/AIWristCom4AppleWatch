@@ -5,10 +5,12 @@ import Foundation
 final class SpeechOutput: NSObject, AVSpeechSynthesizerDelegate {
     private let synthesizer = AVSpeechSynthesizer()
     private var completion: (@MainActor () -> Void)?
+    private var generation = UUID()
     private var utterance: AVSpeechUtterance?
     override init() { super.init(); synthesizer.delegate = self }
     func speak(_ text: String, completion: @escaping @MainActor () -> Void) async throws {
         stop()
+        let id = generation
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playback, mode: .spokenAudio)
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -18,6 +20,7 @@ final class SpeechOutput: NSObject, AVSpeechSynthesizerDelegate {
                 else { continuation.resume(throwing: ProtocolError.remote("無法啟動朗讀音訊")) }
             }
         }
+        guard id == generation else { throw CancellationError() }
         do { try Task.checkCancellation() }
         catch { try? session.setActive(false); throw error }
         let utterance = AVSpeechUtterance(string: text)
@@ -28,6 +31,7 @@ final class SpeechOutput: NSObject, AVSpeechSynthesizerDelegate {
         synthesizer.speak(utterance)
     }
     func stop() {
+        generation = UUID()
         completion = nil
         utterance = nil
         synthesizer.stopSpeaking(at: .immediate)
