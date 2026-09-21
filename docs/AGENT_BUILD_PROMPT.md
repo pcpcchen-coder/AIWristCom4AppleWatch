@@ -15,6 +15,7 @@ pcpcchen-coder/AIWristCom4AppleWatch
 ```
 README.md
 docs/ARCHITECTURE.md
+docs/IPHONE_COMPANION_ARCHITECTURE.md
 docs/CHATGPT_OAUTH_BACKEND.md
 docs/DOUBLE_TAP_DESIGN.md
 docs/WEEKEND_BUILD_PLAN.md
@@ -27,12 +28,13 @@ docs/WEEKEND_BUILD_PLAN.md
 第一版 MVP 流程：
 
 ```
-User taps microphone
+Double Tap
 → speak Traditional Chinese
-→ speech-to-text
-→ HTTPS POST /api/v1/query
-→ AI Gateway
-→ LLM reply
+→ speech-to-text on Watch
+→ WatchConnectivity
+→ paired iPhone Companion
+→ iPhone LLMProvider
+→ reply through WatchConnectivity
 → Watch displays reply
 → Watch speaks reply
 ```
@@ -42,11 +44,20 @@ User taps microphone
 Watch：
 - Swift
 - SwiftUI
+- WatchConnectivity
 - Apple 原生 API 優先
 - 不使用第三方 UI framework
-- 不把任何 LLM API key 寫入 Watch App
+- 不把 Gateway URL、device token、OAuth token 或 LLM API key 寫入 Watch App
+- **Watch 不得直接 HTTP 呼叫 LLM/Gateway**
 
-Server：
+iPhone Companion：
+- SwiftUI
+- WatchConnectivity / WCSession
+- Watch request 必須先進 iPhone
+- iPhone 擁有 provider settings 與 LLM Router
+- 即時互動使用 sendMessage/replyHandler
+
+Server（僅目前 ChatGPT OAuth provider host）：
 - Python
 - FastAPI
 - 官方 Codex App Server
@@ -64,17 +75,18 @@ WatchApp/
   AIWristComApp.swift
   ContentView.swift
   Models/AppState.swift
-  Models/QueryRequest.swift
-  Models/QueryResponse.swift
-  Services/AudioRecorder.swift
   Services/SpeechRecognizer.swift
-  Services/AgentClient.swift
+  Services/PhoneBridge.swift
+  Services/VoiceInteractionController.swift
   Services/SpeechOutput.swift
-  Views/IdleView.swift
-  Views/ListeningView.swift
-  Views/ThinkingView.swift
-  Views/ResponseView.swift
-  Views/ErrorView.swift
+
+iPhoneApp/
+  AIWristCompanionApp.swift
+  Models/GatewayModels.swift
+  Services/WatchSessionManager.swift
+  Services/CompanionSettings.swift
+  Services/LLMProvider.swift
+  Views/CompanionHomeView.swift
 
 Server/
   README.md
@@ -138,42 +150,41 @@ transcribing/sending/speaking/error → primary action disabled
 
 不要自行使用 accelerometer / Core Motion 模擬 Double Tap，也不要聲稱可以在 Watch Face 全域攔截 Double Tap 喚醒 App。
 
-## API
+## Watch ↔ iPhone protocol
 
-POST：
-
-```
-/api/v1/query
-```
+Watch 使用 `WCSession.sendMessage`。
 
 Request：
 
-```json
-{
-  "text": "string",
-  "device": "apple_watch",
-  "locale": "zh-TW",
-  "session_id": "optional"
-}
+```text
+type=query
+request_id=<uuid>
+text=<recognized text>
+locale=zh-TW
 ```
 
-Response：
+Reply：
 
-```json
-{
-  "ok": true,
-  "request_id": "string",
-  "reply": "string",
-  "intent": "general_chat",
-  "speak": true
-}
+```text
+request_id=<same uuid>
+reply=<assistant text>
 ```
+
+Error：
+
+```text
+request_id=<same uuid>
+error=<message>
+```
+
+Watch 不得直接呼叫 `/api/v1/query`。
 
 ## v0.1 LLM backend 固定設計
 
 ```text
 Watch
-→ FastAPI
+→ paired iPhone Companion
+→ FastAPI/Codex Host
 → codex app-server
 → ChatGPT OAuth
 → subscription entitlement
@@ -216,8 +227,10 @@ turn/completed
 - auth/status 顯示 authenticated=true
 - 不設定 OPENAI_API_KEY
 - /api/v1/query smoke test pass
-- Watch 可送 HTTP request
-- Watch 可解析 reply
+- Watch → iPhone sendMessage 可連續成功 10 次
+- iPhone 可被 Watch live message 喚醒處理
+- Watch 不直接 HTTP 呼叫 Gateway
+- iPhone 可取得 provider reply 並回傳 Watch
 - error response 不 crash
 - 中文 STT flow 已接好
 - TTS flow 已接好
