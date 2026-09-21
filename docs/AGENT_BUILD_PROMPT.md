@@ -15,6 +15,7 @@ pcpcchen-coder/AIWristCom4AppleWatch
 ```
 README.md
 docs/ARCHITECTURE.md
+docs/CHATGPT_OAUTH_BACKEND.md
 docs/WEEKEND_BUILD_PLAN.md
 ```
 
@@ -47,7 +48,12 @@ Watch：
 Server：
 - Python
 - FastAPI
-- provider adapter pattern
+- 官方 Codex App Server
+- ChatGPT managed OAuth / device-code login
+- App Server 使用本機 stdio JSONL transport
+- **不得要求 OPENAI_API_KEY**
+- **不得呼叫未公開 ChatGPT web endpoint**
+- **不得自行解析或複製 OAuth token**
 - API contract 必須符合 README
 
 ## 必須建立的檔案
@@ -70,14 +76,10 @@ WatchApp/
   Views/ErrorView.swift
 
 Server/
+  README.md
   main.py
-  router.py
+  codex_client.py
   models.py
-  providers/base.py
-  providers/openai_provider.py
-  providers/anthropic_provider.py
-  providers/local_provider.py
-  config.example.yaml
   requirements.txt
 
 tests/
@@ -144,6 +146,41 @@ Response：
 }
 ```
 
+## v0.1 LLM backend 固定設計
+
+```text
+Watch
+→ FastAPI
+→ codex app-server
+→ ChatGPT OAuth
+→ subscription entitlement
+```
+
+必須實作／保留：
+
+```
+GET  /api/v1/auth/status
+POST /api/v1/auth/device/start
+GET  /api/v1/limits
+POST /api/v1/query
+```
+
+Codex protocol 至少使用：
+
+```
+initialize
+initialized
+account/read
+account/login/start
+account/rateLimits/read
+model/list
+thread/start
+turn/start
+turn/completed
+```
+
+模型不可 hard-code；由 `model/list` 選目前帳號的 default model。
+
 ## 完成條件
 
 不要以「程式碼已寫完」作為完成。
@@ -152,6 +189,9 @@ Response：
 
 - Watch project 可 compile
 - Server 可啟動
+- ChatGPT OAuth / device-code login 可完成
+- auth/status 顯示 authenticated=true
+- 不設定 OPENAI_API_KEY
 - /api/v1/query smoke test pass
 - Watch 可送 HTTP request
 - Watch 可解析 reply
