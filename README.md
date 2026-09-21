@@ -6,18 +6,22 @@
 
 ```text
 Apple Watch
-  ↓ 語音輸入
+  ↓ Double Tap / 語音輸入
 Speech-to-Text
+  ↓ WatchConnectivity
+Paired iPhone Companion
+  ↓ LLM Router
+Provider
   ↓
-AI Gateway / Agent Router
-  ↓
-Codex App Server
-  ↓ ChatGPT OAuth（v0.1）
-ChatGPT/Codex subscription model
-  ↓
-文字 + 語音回覆
+文字回答
+  ↓ WatchConnectivity
+Apple Watch 顯示 + TTS
 
-Future: Claude / Gemini / Local LLM / OpenClaw / Hermes / FamilyRecorder / Calendar / ToDo
+v0.1 Provider:
+iPhone → Codex Gateway Host → ChatGPT OAuth
+
+Future:
+iPhone local model / OpenAI API / Claude / Gemini / OpenClaw / Hermes / FamilyRecorder / Calendar / ToDo
 ```
 
 ---
@@ -136,44 +140,39 @@ App 在前景 / idle
 
 ## 3. 建議架構
 
-> **v0.1 backend 決策：使用官方 Codex App Server + ChatGPT OAuth，不使用 OpenAI API key。**
+> **v0.1 架構修正：Apple Watch 的唯一近端 Hub 是配對的 iPhone companion app。**
 >
-> 詳見 [docs/CHATGPT_OAUTH_BACKEND.md](docs/CHATGPT_OAUTH_BACKEND.md)。
+> Watch 透過 WatchConnectivity 把文字送給 iPhone；iPhone 再決定使用哪個 LLM provider。
+>
+> 目前若要維持「ChatGPT OAuth / 不走 API billing」，iPhone 會再連到可執行 Codex App Server 的 provider host。
+>
+> 詳見 [docs/IPHONE_COMPANION_ARCHITECTURE.md](docs/IPHONE_COMPANION_ARCHITECTURE.md) 與 [docs/CHATGPT_OAUTH_BACKEND.md](docs/CHATGPT_OAUTH_BACKEND.md)。
 
 ```text
 ┌──────────────────────────────┐
 │         Apple Watch          │
-│                              │
-│ SwiftUI                      │
-│ ├─ VoiceRecorder             │
-│ ├─ SpeechRecognizer          │
-│ ├─ AgentClient               │
-│ ├─ SpeechOutput              │
-│ └─ UI State Machine          │
+│ Double Tap / STT / UI / TTS  │
 └──────────────┬───────────────┘
-               │ HTTPS / JSON
+               │ WatchConnectivity
                ▼
 ┌──────────────────────────────┐
-│        AI Gateway API        │
-│                              │
-│ POST /api/v1/query           │
-│ ├─ auth                      │
-│ ├─ request validation        │
-│ ├─ agent router              │
-│ ├─ provider adapter          │
-│ └─ response formatter        │
+│     iPhone Companion App     │
+│ WatchSessionManager          │
+│ CompanionLLMRouter           │
+│ provider settings            │
 └──────────────┬───────────────┘
                │
-               ▼
-┌──────────────────────────────┐
-│      codex app-server        │
-│ local stdio / JSON-RPC       │
-│ ChatGPT managed OAuth        │
-└──────────────┬───────────────┘
-               ▼
-      ChatGPT/Codex entitlement
-
-Future providers stay behind the same Gateway contract.
+        replaceable provider
+               │
+     ┌─────────┴─────────┐
+     ▼                   ▼
+Remote Codex Host     Future local/API
+     │
+     ▼
+Codex App Server
+     │ ChatGPT OAuth
+     ▼
+ChatGPT/Codex entitlement
 ```
 
 ---
@@ -194,13 +193,11 @@ AIWristCom4AppleWatch/
 │  ├─ AIWristComApp.swift
 │  ├─ ContentView.swift
 │  ├─ Models/
-│  │  ├─ AppState.swift
-│  │  ├─ QueryRequest.swift
-│  │  └─ QueryResponse.swift
+│  │  └─ AppState.swift
 │  ├─ Services/
-│  │  ├─ AudioRecorder.swift
 │  │  ├─ SpeechRecognizer.swift
-│  │  ├─ AgentClient.swift
+│  │  ├─ PhoneBridge.swift
+│  │  ├─ VoiceInteractionController.swift
 │  │  └─ SpeechOutput.swift
 │  └─ Views/
 │     ├─ IdleView.swift
@@ -208,6 +205,16 @@ AIWristCom4AppleWatch/
 │     ├─ ThinkingView.swift
 │     ├─ ResponseView.swift
 │     └─ ErrorView.swift
+│
+├─ iPhoneApp/
+│  ├─ AIWristCompanionApp.swift
+│  ├─ Models/
+│  ├─ Services/
+│  │  ├─ WatchSessionManager.swift
+│  │  ├─ CompanionSettings.swift
+│  │  └─ LLMProvider.swift
+│  └─ Views/
+│     └─ CompanionHomeView.swift
 │
 ├─ Server/
 │  ├─ README.md
