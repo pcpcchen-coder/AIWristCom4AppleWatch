@@ -1,4 +1,14 @@
-# macOS Always-On Gateway
+# Optional Codex Host on macOS
+
+> 此文件不是 Apple Watch ↔ iPhone 架構的一部分。
+>
+> 正確近端資料路徑永遠是：
+>
+> ```text
+> Apple Watch → paired iPhone Companion
+> ```
+>
+> 本文件只描述「如果 v0.1 想利用 ChatGPT/Codex OAuth 而不走 API billing」，可以暫時讓 Mac 擔任 **RemoteCodexProvider 的 host**。
 
 ## 為什麼需要
 
@@ -21,10 +31,10 @@ Mac login
 → 平常不用人工啟動後端
 
 Apple Watch
-→ AIWristCom foreground
-→ Double Tap
-→ talk
-→ reply
+→ iPhone Companion
+→ HTTPS to optional Mac Codex host
+→ reply to iPhone
+→ reply to Watch
 ```
 
 ## 安裝
