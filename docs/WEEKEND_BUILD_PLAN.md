@@ -2,108 +2,160 @@
 
 目標：一個週末做出 v0.1 可操作 MVP。
 
-## Day 1 — Watch 端
+## Day 1 — Watch + iPhone Connectivity
 
-### Step 1
-建立 Xcode watchOS App。
+### Step 1 — 建立正確 Xcode project
 
-驗收：
-- simulator 可跑
-- 實體 Watch 可跑
+建立：
 
-### Step 2
-建立 AppState。
-
-驗收：
-- idle / listening / sending / speaking / error 可人工切換
-
-### Step 3
-完成 UI。
-
-驗收：
-- 五種狀態畫面都能顯示
-- 小螢幕不爆版
-
-### Step 4
-完成語音輸入。
-
-驗收：
-- 中文 10 秒語音可轉文字
-- 拒絕 microphone permission 時不 crash
-
-## Day 2 — Backend + End-to-End
-
-### Step 5
-建立最小 HTTP Server。
-
-先固定回覆，不接 AI。
-
-驗收：
-
-```bash
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"text":"hello","device":"apple_watch","locale":"zh-TW"}'
+```text
+AIWristCom iOS App
+└─ Apple Watch companion target
 ```
 
-回傳標準 JSON。
-
-### Step 6
-Watch 呼叫 Server。
+不是 Watch-only project。
 
 驗收：
-- Watch 送 text
-- Server terminal 能看到 request
+
+- iPhone app 可跑到實體 iPhone
+- Watch app 可跑到配對的實體 Apple Watch
+
+### Step 2 — 啟動 WCSession
+
+iPhone 與 Watch 都建立、設定 delegate 並 activate `WCSession.default`。
+
+驗收：
+
+- iPhone 顯示 paired=true
+- watch app installed=true
+- activationState=activated
+
+### Step 3 — Double Tap + UI state
+
+驗收：
+
+- idle / listening / transcribing / sending / speaking / error 正常
+- Double Tap #1 → listening
+- Double Tap #2 → finish/send
+- busy 狀態不重複觸發
+
+### Step 4 — 語音輸入
+
+驗收：
+
+- 繁中 10 秒語音可轉文字
+- 拒絕 microphone/speech permission 時不 crash
+
+### Step 5 — 先只打通 Watch ↔ iPhone
+
+Watch：
+
+```text
+sendMessage({
+  type: query,
+  request_id,
+  text,
+  locale
+})
+```
+
+iPhone 暫時固定回：
+
+```text
+iPhone 已收到：<text>
+```
+
+驗收：
+
+```text
+Watch → iPhone → Watch
+```
+
+連續 10 次都成功。
+
+> 這一步沒過以前，不准開始接 LLM。
+
+## Day 2 — iPhone LLM Provider + End-to-End
+
+### Step 6 — iPhone Companion Router
+
+iPhone 實作：
+
+```text
+WatchSessionManager
+→ CompanionLLMRouter
+→ LLMProvider
+```
+
+Provider 設定只存在 iPhone。
+
+### Step 7 — ChatGPT OAuth provider
+
+目前 no-extra-API-billing 路徑：
+
+```text
+Watch
+→ iPhone
+→ Codex Gateway Host
+→ codex app-server
+→ ChatGPT OAuth
+```
+
+開發期可先用 Mac 作 Codex host。
+
+驗收：
+
+- Codex host `auth/status` authenticated=true
+- 不設定 `OPENAI_API_KEY`
+- iPhone 可取得 ChatGPT/Codex reply
+- Watch 不知道 Gateway URL/OAuth token
+- reply 可從 iPhone 回 Watch
+
+### Step 8 — Watch TTS
+
+驗收：
+
 - Watch 顯示 reply
+- Watch 以 zh-TW TTS 播放 reply
 
-### Step 7
-接 ChatGPT OAuth backend。
-
-1. 安裝 Codex CLI。
-2. 先執行 `codex login`，選「使用 ChatGPT 登入」；或使用本專案 device-code endpoint。
-3. FastAPI 啟動 `codex app-server` child process。
-4. 以 `account/read` 確認 auth。
-5. 以 `model/list → thread/start → turn/start` 取得回答。
-
-驗收：
-- `GET /api/v1/auth/status` → authenticated=true
-- 系統環境沒有 `OPENAI_API_KEY` 也能工作
-- 使用者說「幫我用一句話介紹鋰電池 BMS」
-- AI reply 正常回到 Watch
-- `GET /api/v1/limits` 能讀到 rate-limit 狀態
-
-### Step 8
-加 TTS。
-
-驗收：
-- reply 可從 Watch 喇叭朗讀
-
-### Step 9
-做失敗測試。
+### Step 9 — Failure tests
 
 至少測：
 
-1. 關 Server
-2. 錯 URL
-3. timeout
-4. 空白輸入
-5. API 回 500
-6. 無網路
+1. iPhone 不在附近
+2. iPhone companion 未安裝
+3. iPhone 有連線、Codex host 關閉
+4. provider timeout
+5. ChatGPT OAuth 過期
+6. 空白 STT
+7. WatchConnectivity error
 
-### Step 10
-連續測 10 次。
+### Step 10 — 完整 10-cycle test
 
-只要完整流程連續 10 次成功，v0.1 即完成。
+```text
+Double Tap
+→ Speak
+→ Double Tap
+→ STT
+→ WatchConnectivity
+→ iPhone
+→ LLM
+→ iPhone reply
+→ Watch display/TTS
+→ idle
+```
 
-## 不要在第一個週末做
+連續 10 次成功才算 v0.1 Pass。
+
+## 第一個週末不要做
 
 - Calendar
 - FamilyRecorder
+- Home Assistant
 - Siri
 - Complication
-- 多 Agent
 - streaming
-- 自製帳密/login system（OAuth 直接交給 Codex）
+- 多 Agent
 - fancy animation
 
-那些全部等 v0.1 Pass 後再加。
+先把 Watch ↔ iPhone ↔ LLM 的主路徑做穩。
