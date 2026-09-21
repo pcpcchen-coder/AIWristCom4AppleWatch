@@ -33,10 +33,15 @@ final class CompanionSettings: ObservableObject {
         var query = key
         query[kSecReturnData as String] = true
         var result: CFTypeRef?
-        if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-           let data = result as? Data { deviceToken = String(decoding: data, as: UTF8.self) }
-        // Remove the previous scaffold's plaintext secret; enter it again in this UI.
-        UserDefaults.standard.removeObject(forKey: "deviceToken")
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecSuccess, let data = result as? Data {
+            deviceToken = String(decoding: data, as: UTF8.self)
+            UserDefaults.standard.removeObject(forKey: "deviceToken")
+        } else if status == errSecItemNotFound,
+                  let legacy = UserDefaults.standard.string(forKey: "deviceToken"), !legacy.isEmpty {
+            deviceToken = legacy
+            saveToken() // Remove legacy plaintext only after successful migration.
+        }
     }
     func saveToken() {
         let data = Data(deviceToken.utf8)
@@ -48,6 +53,7 @@ final class CompanionSettings: ObservableObject {
             status = SecItemAdd(item as CFDictionary, nil)
         }
         credentialError = status == errSecSuccess ? "" : "無法儲存憑證（\(status)）"
+        if status == errSecSuccess { UserDefaults.standard.removeObject(forKey: "deviceToken") }
     }
     func router() throws -> CompanionLLMRouter {
         switch provider {
