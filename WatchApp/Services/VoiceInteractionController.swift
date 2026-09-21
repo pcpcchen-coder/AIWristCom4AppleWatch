@@ -9,7 +9,7 @@ final class VoiceInteractionController: ObservableObject {
     @Published private(set) var lastReply = ""
 
     private let recognizer = SpeechRecognizer()
-    private let agentClient = AgentClient()
+    private let phoneBridge = PhoneBridge.shared
     private let speechOutput = SpeechOutput()
 
     var primaryActionEnabled: Bool {
@@ -89,19 +89,15 @@ final class VoiceInteractionController: ObservableObject {
         state = .sending
 
         do {
-            let response = try await agentClient.query(text)
-            lastReply = response.reply
+            let reply = try await phoneBridge.ask(text)
+            lastReply = reply
             state = .speaking
             WKInterfaceDevice.current().play(.success)
 
-            if response.speak {
-                speechOutput.speak(response.reply) { [weak self] in
-                    Task { @MainActor in
-                        self?.state = .idle
-                    }
+            speechOutput.speak(reply) { [weak self] in
+                Task { @MainActor in
+                    self?.state = .idle
                 }
-            } else {
-                state = .idle
             }
         } catch {
             fail(error.localizedDescription)
